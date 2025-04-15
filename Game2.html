@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>新卒人生模拟器</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background-color: #f0f0f0; }
+    .container { background-color: white; padding: 20px; border-radius: 10px; width: 400px; margin: auto; }
+    .button {
+      padding: 10px 20px;
+      margin: 10px 0;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+      display: block;
+      width: 100%;
+    }
+    .button:hover { background-color: #0056b3; }
+    h1 { text-align: center; }
+    p, label { font-size: 18px; }
+    input, select { width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 15px; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>新卒人生シミュレータ</h1>
+
+    <!-- 初始输入区域 -->
+    <div id="input-section">
+      <label for="ageInput">年龄（歳）：</label>
+      <input type="number" id="ageInput" placeholder="年齢を入力してください">
+      <label for="savingRate">毎月の予定貯蓄率：</label>
+      <input type="number" id="savingRate" placeholder="例：3%なら3を入力。1%は2000円">
+      <label for="moneyAmount">今すぐ貯蓄：</label>
+      <input type="number" id="moneyAmount" placeholder="現在の貯蓄額を入力してください">
+
+      <button class="button" onclick="startGame()">ゲーム開始</button>
+    </div>
+
+    <!-- 游戏事件区域 -->
+    <div id="game-section" style="display: none;">
+      <p id="event">ゲーム開始</p>
+      <button id="optionA" class="button"></button>
+      <button id="optionB" class="button"></button>
+      <button id="optionC" class="button" style="display: none;"></button>
+    </div>
+  </div>
+
+  <script>
+    let money = 190000;
+    let moneyForFun = 0;
+    let moneySave = 0;
+    let insurance = 1;
+    let annuity = 1;
+    let annuityMethod = 1;
+    let currentEventIndex = 0;
+    let deductMoney1 = 0;
+    let deductMoney2 = 0;
+    let currentAge = 0
+    let currentAmount = 0;
+
+    const events = [
+      {
+        text: "マツダ保険加入の有無",
+        options: {
+          A: { desc: "はい", deductMoney1: 2500, insurance: 1 },
+          B: { desc: "いいえ", insurance: 0 }
+        }
+      },
+      {
+        text: "年金利用の度（円）",
+        options: {
+          A: { desc: "半分（2500円）", deductMoney2: 2000, annuity: 0 },
+          B: { desc: "全部（5000円）", deductMoney2: 4000, annuity: 1 },
+          C: { desc: "全部ない", deductMoney2: 0, annuity: 2 }
+        }
+      },
+      {
+        text: "投資方法",
+        options: {
+          A: { desc: "保守", annuityMethod: 0 },
+          B: { desc: "リスク", annuityMethod: 1 }
+        }
+      }
+    ];
+
+    function startGame() {
+     currentEventIndex = 0;
+
+      const ageInput = parseInt(document.getElementById("ageInput").value);
+      const savingRate = parseFloat(document.getElementById("savingRate").value);
+      const moneyAmount = parseFloat(document.getElementById("moneyAmount").value);
+
+
+      currentAge = ageInput-1;
+
+      currentAmount = moneyAmount;
+      currentRate = savingRate;
+        moneySave = money * (savingRate / 100);
+
+       moneyForFun = money-moneySave - deductMoney1 - deductMoney2;
+       nennkinn = 0;
+      nennkinnAmount = 0;
+
+      document.getElementById("input-section").style.display = "none";
+      document.getElementById("game-section").style.display = "block";
+      showEvent(0);
+      
+    }
+
+    function showEvent(index) {
+      const event = events[index];
+      document.getElementById("event").textContent = event.text;
+
+      const btnA = document.getElementById("optionA");
+      const btnB = document.getElementById("optionB");
+      const btnC = document.getElementById("optionC");
+
+      const optionA = event.options.A;
+      const optionB = event.options.B;
+      const optionC = event.options.C;
+
+      btnA.textContent = optionA.desc;
+      btnA.style.display = "block";
+      btnA.onclick = () => handleOption(index, 'A');
+
+      btnB.textContent = optionB.desc;
+      btnB.style.display = "block";
+      btnB.onclick = () => handleOption(index, 'B');
+
+      if (optionC) {
+        btnC.textContent = optionC.desc;
+        btnC.style.display = "block";
+        btnC.onclick = () => handleOption(index, 'C');
+      } else {
+        btnC.style.display = "none";
+      }
+    }
+
+    function handleOption(index, choice) {
+      const selectedOption = events[index].options[choice];
+
+      if (selectedOption.deductMoney1 !== undefined) {
+        money -= selectedOption.deductMoney1;
+      }
+      if (selectedOption.deductMoney2 !== undefined) {
+        money -= selectedOption.deductMoney2;
+      }
+      if (selectedOption.insurance !== undefined) {
+        insurance = selectedOption.insurance;
+      }
+      if (selectedOption.annuity !== undefined) {
+        annuity = selectedOption.annuity;
+      }
+      if (selectedOption.annuityMethod !== undefined) {
+        annuityMethod = selectedOption.annuityMethod;
+      }
+
+      currentEventIndex++;
+if (currentEventIndex < events.length) {
+  showEvent(currentEventIndex);
+} else {
+  nextYear();
+}
+
+       
+    }
+
+function nextYear() {
+  currentAge++;
+  let interestRate;
+  if (annuity === 1){
+	       nennkinn = 60000;
+  	  }
+      else if(annuity === 0){
+    	   nennkinn = 30000;
+  	  }
+      else{
+     	   nennkinn = 0;
+ 	    }
+  if(annuityMethod === 1 ) {
+    interestRate = (Math.random() * 30 - 10) / 100;
+  } else {
+    interestRate = (Math.random() * 9 - 2) / 100;
+  }
+
+  if (currentAge >= 60) {
+    endGame();
+    return;
+  }
+  currentAmount += moneySave * 12;  // 将 moneyAmount 累加
+
+    const events = [
+      {
+      name: "普段",
+      description: "まあまあやった、給与が上がり、月収が増加。",
+      probability: () => currentAge <= 40 ? 0.95 : 0,
+      effect: () => {moneyForFun += 100 * (100-currentRate);
+   moneySave += 100 * currentRate;
+      }
+    },
+    {
+      name: "結婚",
+      description: "<b>結婚しなさい！</b>",
+      probability: () => currentAge === 30 ? 1 : 0,
+      effect: () => {
+        moneyForFun -= 200 * (100-currentRate);
+        moneySave -= 200 * currentRate;
+        currentAmount -= 200000
+      }
+    },
+    {
+      name: "不動産購入",
+      description: "<b>不動産購入、月々の出費増加。ボーナスを使って頭金を支払いました。</b>",
+      probability: () => currentAge === 35 ? 1 : 0,
+      effect: () => {
+        moneyForFun -= 1000 * (100-currentRate);
+        moneySave -= 1000 * currentRate;
+      }
+    },
+    {
+    name: "息子",
+    description: "<b>息子を出産しました！</b>",
+    probability: currentAge >= 30 && currentAge <= 45 ? 0.05 : 0,  // 使用 currentAge 而非 age
+      effect: () => {
+        moneyForFun -= 500 * (100 - currentRate);
+        moneySave -= 500 * currentRate;
+      }
+    },
+    {
+      name: "昇進",
+      description: "昇進！月収がさらに5万円アップ！",
+      probability: 0.1,
+      effect: () => {
+        moneyForFun += 500 * (100-currentRate);
+        moneySave += 500 * currentRate;
+      }
+    },
+    {
+      name: "経済危機",
+      get description() {
+        if (annuityMethod === 0) {
+          return "経済危機が発生し、年金損失が増加しました。";
+        } else{
+          return "経済危機が発生し、年金損失が大幅に増加しました。";
+        }
+      },
+      probability: 0.05,
+      effect: () => {
+        if (insurance === 0) {
+          interestRate -= 0.1;
+        } else {
+          interestRate -= 0.4;  // 支出10万円
+        }   
+      }
+    },
+    {
+      name: "技術革命",
+      get description() {
+        if (annuityMethod === 0) {
+          return "技術革命が発生し、金の利益は増しました。";
+        } else{
+          return "技術革命が発生し、金の利益は急増しました。";
+        }
+      },
+      probability: 0.05,
+      effect: () => {
+        if (insurance === 0) {
+          interestRate += 0.1;
+        } else {
+          interestRate += 0.4;  // 支出10万円
+        }   
+      }
+    },
+    {
+      name: "重い病気にかかった",
+      get description() {
+        if (insurance === 1) {
+          return "重い病気にかかった。保険で全額カバーされた。";
+        } else{
+          return "重い病気にかかった。100万円の出費。";
+        }
+      },
+      probability: 0.01,
+      effect: () => {
+        if (insurance === 1) {
+          // 无需支出
+        } else {
+          currentAmount -= 1000000;  // 支出10万円
+        }   
+      }
+    },
+    {
+      name: "事故による怪我",
+      get description() {
+        if (insurance === 1) {
+          return "遊んでいるときに転んで怪我をしましたが、保険で全額カバーされました。";
+        } else{
+          return "遊んでいるときに転んで怪我をし、入院費として30万円の出費がありました。";
+        }
+      },
+      probability: 0.05,
+      effect: () => {
+        if (insurance === 1) {
+          // 无需支出
+        } else {
+          currentAmount -= 300000;  // 支出10万円
+        }   
+      }
+    },
+    {
+      name: "病気療養",
+      get description() {
+        if (insurance === 1) {
+          return "軽い病気にかかりましたが、保険で全額カバーされました。";
+        } else{
+          return "軽い病気にかかり、治療費として5万円の出費がありました。";
+        }
+      },
+      probability: 0.05,
+      effect: () => {
+        if (insurance === 1) {
+          // 无需支出
+        } else {
+          currentAmount -= 50000;  // 支出10万円
+        }   
+      }
+    },
+    {
+      name: "車の故障",
+      get description() {
+        if (insurance === 1) {
+          return "車が壊れたが、保険で全額カバーされた！";
+        } else{
+          return "車が壊れたが。10万円の出費。";
+        }
+      },
+      probability: 0.05,
+      effect: () => {
+        if (insurance === 1) {
+          // 无需支出
+        } else {
+          currentAmount -= 100000;  // 支出10万円
+        }   
+      }
+    },
+    {
+      name: "宝くじ当選！",
+      description: "ラッキー！500万円の臨時収入！",
+      probability: 0.001,
+      effect: () => currentAmount += 5000000
+    }
+  ];
+  nennkinnAmount = (nennkinnAmount+nennkinn) * (1+interestRate);
+
+  let eventMessages = "";
+
+  events.forEach(event => {
+  const prob = typeof event.probability === 'function'
+    ? event.probability()
+    : event.probability;
+
+  if (Math.random() < prob) {
+    event.effect();
+    const desc = typeof event.description === 'function' ? event.description() : event.description;
+    eventMessages += `<p>${desc}</p>`;
+  }
+});
+
+  if (eventMessages === "") {
+    eventMessages = `<p>今年は特別なイベントはありませんでした。まだ頑張らなきゃ。</p>`;
+  }
+
+  document.getElementById("game-section").innerHTML = `
+      ${eventMessages}
+      <p>現在資産：${currentAmount}円</p>
+      <p>年金总额：${nennkinnAmount.toFixed(0)}円</p>
+      <p>月次支出：${moneyForFun}円</p>
+    <p>年齢：${currentAge}歳，今年の金利${(interestRate*100).toFixed(2)}%</p>
+    <button class="button" onclick="nextYear()">次の年へ</button>
+  `;
+}
+
+
+    function endGame() {
+      finalMoney = currentAmount+nennkinnAmount;
+      document.getElementById("game-section").innerHTML = `
+        <p>ゲーム終了！</p>
+        <p>最終資産：${finalMoney.toFixed(0)}円</p>
+      `;
+    }
+  </script>
+</body>
+</html>
